@@ -1,16 +1,18 @@
-# E-Commerce CDC 数据同步链路说明文档
+# CDC 数据同步链路说明文档
 本仓库实现了一套基于 Change Data Capture (CDC) 模式的实时数据同步系统，旨在将业务数据库(Postgres)的变更毫秒级同步至搜索与分析引擎(Elasticsearch)。
 
-架构: [订单/商品服务] ——> (Postgres 写库) ——> [CDC/Debezium] ——> Strimzi-Kafka ——> [go消费者] ——> (ES 读库)
-   1. Order/Product Service: 业务微服务，负责处理交易逻辑并将数据持久化至 Postgres。
+架构: [业务服务] ——> (Postgres 写库) ——> [CDC/Debezium] ——> Strimzi-Kafka ——> [消费者应用] ——> (ES 读库)
+   1. Service: 业务微服务，负责处理交易逻辑并将数据持久化至 Postgres。
    2. Postgres (Source): 开启逻辑复制(Logical Replication)，作为数据源头。
    3. Debezium (Connect): 监听 Postgres WAL 日志，将变更转换为 JSON 消息发送至 Kafka。
    4. Kafka (Message Queue): 消息解耦与削峰填谷，存储原始变更记录。
-   5. Go Consumer: 自研高性能消费者，负责数据清洗、类型转换及批量写入。
+   5. App Consumer: 自研高性能消费者，负责数据清洗、类型转换及批量写入。
    6. Elasticsearch (Sink): 提供全文检索与复杂聚合能力。
    7. Kibana (UI): 数据可视化验证与系统监控。
 
 # 优点
+
+- 完全物理分离
 
 - 断点续传(Offset 管理):使用 CommitInterval: 0。 在 processMessage 成功将数据放入 BulkIndexer 队列后立即调用 CommitMessages。虽然 Bulk 是异步的，但在 CDC 最终一致性场景下，配合索引操作的幂等性(始终以 DB 主键作为 ES ID)，这能平衡性能与安全性。如果程序在 Bulk 刷新前崩溃，重启后 Kafka 会重发该位移后的消息，ES 侧执行相同的 Upsert，结果保持一致。
 
@@ -22,24 +24,19 @@
 
 - 死信处理(错误隔离):对于 Unmarshal 失败的记录，日志记录后直接返回 nil 并提交位移。这防止了单条坏数据导致整个同步链路“卡死”的情况。
 
-# 运行
-```shell
-# Kafka 地址
-export KAFKA_BROKERS=192.168.3.120:9092
-# 组ID
-export KAFKA_GROUP_ID=es-sync-group
-# 消息前缀
-export KAFKA_TOPIC_PREFIX=ecommerce_cdc.
+# 场景
+用户下订单后，立即查看订单详情
 
-# Elasticsearch 配置
-export ES_ADDRESSES=http://localhost:9200
-export ES_USERNAME=elastic
-export ES_PASSWORD=XwjLbwoaCLvuJ7PwaAWtBkNO
-export ES_INDEX_PREFIX=ecommerce_
-
-# 启动程序
-go run cmd/main.go
+架构:
 ```
+[订单服务] ——> (Postgres 写库) ——> [CDC/Debezium] ——> Kafka ——> [报表服务/搜索服务] ——> (ES 读库)
+```
+
+流程：
+
+1. 写：客户端发送 PlaceOrder 命令 → 应用服务 → 订单聚合执行校验、创建订单 → 保存到 MySQL（写库）→ 发布 OrderPlaced 事件。
+2. 同步：事件通过 CDC 进入 Kafka，查询端消费事件，更新 ES 中的订单文档。
+3. 读：客户端立即调用 GetOrder 查询接口 → 直接从 ES 读取订单详情。
 
 # 技术栈
 ## Postgres 端
@@ -188,6 +185,25 @@ kubectl create secret docker-registry tcr-registry-secret \
 Bulk Indexing: 采用 esutil.BulkIndexer 提高写入吞吐，配置 10s 或 5MB 的刷新阈值。
 
 Index Auto-Creation: 内部逻辑根据 Topic 映射自动创建 ecommerce_ 前缀索引。
+
+运行
+```shell
+# Kafka 地址
+export KAFKA_BROKERS=192.168.3.120:9092
+# 组ID
+export KAFKA_GROUP_ID=es-sync-group
+# 消息前缀
+export KAFKA_TOPIC_PREFIX=ecommerce_cdc.
+
+# Elasticsearch 配置
+export ES_ADDRESSES=http://localhost:9200
+export ES_USERNAME=elastic
+export ES_PASSWORD=XwjLbwoaCLvuJ7PwaAWtBkNO
+export ES_INDEX_PREFIX=ecommerce_
+
+# 启动程序
+go run cmd/main.go
+```
 
 ## 数据流转对照表
 
