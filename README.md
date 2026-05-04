@@ -245,7 +245,8 @@ GET ecommerce_orders_order_item/_search
 本文档由工程实践总结得出。在生产环境中，建议开启 Kafka 的 TLS 认证及 Elasticsearch 的 RBAC 权限控制。
 
 文档分散在各处:
-1. strimzi-kafka 安装: /Users/sumery/github/lens077/cloud-native-deploy/stream/kafka/strimzi-kafka/install.sh
-2. strimzi-kafka单机版示例配置文件: /Users/sumery/github/lens077/cloud-native-deploy/stream/kafka/strimzi-kafka/examples/kafka-single-node.yml
-3. Kafka Connect和Kafka Connector示例配置文件: /Users/sumery/github/lens077/cloud-native-deploy/stream/kafka/strimzi-kafka/connect/examples
-4. /Users/sumery/github/lens077/cloud-native-deploy/observability/meter/elastic-stack/client-test
+1. strimzi kafka 安装和配置: https://github.com/lens077/cloud-native-deploy/kafka/strimzi-kafka
+2. strimzi kafka单机版示例配置文件: https://github.com/lens077/cloud-native-deploy/kafka/strimzi-kafka/examples/kafka-single-node.yml
+3. Kafka Connect和Kafka Connector示例配置文件: https://github.com/lens077/cloud-native-deploy/kafka/strimzi-kafka/connect/examples
+4. postgres 安装和配置: https://github.com/lens077/cloud-native-deploy//postgres/default/openebs
+5. elastic-stack 安装和配置: https://github.com/lens077/cloud-native-deploy/elastic-stack
