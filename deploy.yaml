@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-kafka-es-streaming-pipeline
+  labels:
+    app: postgres-kafka-es-streaming-pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-kafka-es-streaming-pipeline
+  template:
+    metadata:
+      name: postgres-kafka-es-streaming-pipeline
+      labels:
+        app: postgres-kafka-es-streaming-pipeline
+    spec:
+      containers:
+        - name: postgres-kafka-es-streaming-pipeline
+          env:
+            # 是否全量刷新
+            - name: REINDEX_MODE
+              value: "false"
+            - name: REINDEX_TOPICS
+              value: "orders.order_main,orders.order_item,orders.order_log,products.skus,products.spus,products.sale_detail"
+            - name: DB_HOST
+              value: "postgres-postgresql.postgres.svc"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "debezium_user"
+            - name: DB_PASSWORD
+              value: "msdnmm"
+            - name: DB_NAME
+              value: "ecommerce"
+            - name: ES_ADDRESSES
+              value: "http://elasticsearch-es-internal-http.elastic-stack.svc:9200"
+            - name: ES_USERNAME
+              value: "elastic"
+            - name: ES_PASSWORD
+              value: "XwjLbwoaCLvuJ7PwaAWtBkNO"
+            - name: ES_INDEX_PREFIX
+              value: "ecommerce_"
+            - name: KAFKA_BROKERS
+              value: "my-cluster-kafka-plain-bootstrap.kafka.svc:9092"
+            - name: KAFKA_GROUP_ID
+              value: "es-sync-consumer"
+            - name: KAFKA_TOPIC_PREFIX
+              value: ""
+          image: ccr.ccs.tencentyun.com/sumery/postgres-kafka-es-streaming-pipeline:dev
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 30000
+              protocol: TCP
+      restartPolicy: Always
+

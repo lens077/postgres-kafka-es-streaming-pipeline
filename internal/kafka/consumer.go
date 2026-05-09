@@ -7,9 +7,9 @@ import (
 	"io"
 	"log"
 
-	"elastic-stack-test-client/internal/conf"
-	"elastic-stack-test-client/internal/es"
-	"elastic-stack-test-client/pkg"
+	"postgres-kafka-es-streaming-pipeline/internal/conf"
+	"postgres-kafka-es-streaming-pipeline/internal/es"
+	"postgres-kafka-es-streaming-pipeline/pkg"
 
 	"github.com/segmentio/kafka-go"
 )

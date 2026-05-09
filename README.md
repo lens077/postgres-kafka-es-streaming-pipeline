@@ -205,6 +205,43 @@ export ES_INDEX_PREFIX=ecommerce_
 go run cmd/main.go
 ```
 
+## 全量重新索引
+当需要从数据库全量同步数据到 ES 时，可启用全量重新索引模式。这在以下场景特别有用：
+- 首次部署或初始化 ES 数据
+- ES 数据丢失需要从数据库重建
+- 数据一致性问题需要强制全量同步
+
+```shell
+# 全量同步模式（从头写入 ES）
+export REINDEX_MODE=true
+export REINDEX_TOPICS=orders.order_main,orders.order_item,products.skus
+
+# 数据库连接配置
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=postgres
+export DB_PASSWORD=your_password
+export DB_NAME=ecommerce
+
+# 启动程序（全量同步完成后自动退出）
+go run cmd/main.go
+```
+
+| 环境变量 | 说明 | 默认值 |
+|---------|------|--------|
+| REINDEX_MODE | 是否启用全量同步模式，设为 `true` 启用 | `false` |
+| REINDEX_TOPICS | 需要同步的表，格式：`schema.table`，多个用逗号分隔 | 空 |
+| DB_HOST | 数据库主机地址 | `localhost` |
+| DB_PORT | 数据库端口 | `5432` |
+| DB_USER | 数据库用户名 | `postgres` |
+| DB_PASSWORD | 数据库密码 | 空 |
+| DB_NAME | 数据库名称 | `postgres` |
+
+**注意**：
+- 全量同步完成后程序会自动退出，不会启动实时同步
+- 使用幂等写入，会覆盖 ES 中已存在的同名 ID 文档
+- 建议在低峰期执行全量同步，避免对生产数据库造成压力
+
 ## 数据流转对照表
 
 | 环节            | 数据形态示例                             | 说明                 |

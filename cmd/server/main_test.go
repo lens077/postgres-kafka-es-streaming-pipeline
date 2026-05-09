@@ -20,9 +20,11 @@ func TestElasticsearchV9Full(t *testing.T) {
 	// 1. 初始化客户端
 	// 使用你提供的密码和配置
 	client, err := elasticsearch.NewTypedClient(elasticsearch.Config{
-		Addresses: []string{"http://127.0.0.1:9200"}, // 确保地址正确
-		Username:  "elastic",
-		Password:  "XwjLbwoaCLvuJ7PwaAWtBkNO",
+		Addresses: []string{"192.168.3.110:443"}, // 确保地址正确
+		// Addresses: []string{"es.sumery.com"}, // 确保地址正确
+		// Addresses: []string{"127.0.0.1:9200"}, // 确保地址正确
+		Username: "elastic",
+		Password: "XwjLbwoaCLvuJ7PwaAWtBkNO",
 	})
 	if err != nil {
 		t.Fatalf("创建客户端失败: %s", err)

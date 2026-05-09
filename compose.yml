@@ -1,0 +1,15 @@
+services:
+  postgres-kafka-es-streaming-pipeline:
+    environment:
+      - ES_ADDRESSES=es.sumery.com
+      - ES_USERNAME=elastic
+      - ES_PASSWORD=XwjLbwoaCLvuJ7PwaAWtBkNO
+      - ES_INDEX_PREFIX="ecommerce_"
+      - KAFKA_BROKERS=kafka.sumery.com:9092
+      - KAFKA_GROUP_ID="es-sync-consumer"
+      - KAFKA_TOPIC_PREFIX="ecommerce_cdc."
+    image: ccr.ccs.tencentyun.com/sumery/postgres-kafka-es-streaming-pipeline:dev
+    ports:
+      - "30000:30000"
+    pull_policy: always
+    restart: on-failure:2
