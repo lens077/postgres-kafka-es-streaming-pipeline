@@ -117,7 +117,15 @@ func (r *Reindexer) reindexTable(ctx context.Context, topic string) error {
 
 		doc := make(map[string]interface{})
 		for i, col := range columns {
-			doc[col] = values[i]
+			val := values[i]
+			switch v := val.(type) {
+			case []byte:
+				// 如果是数字或JSON字符串，转为 string 避免 Base64
+				// 建议增加逻辑判断，或者直接 string(v)
+				doc[col] = string(v)
+			default:
+				doc[col] = v
+			}
 		}
 
 		if err := r.indexer.IndexDocument(ctx, indexName, doc); err != nil {

@@ -24,7 +24,7 @@ func NewIndexer(es *elasticsearch.TypedClient) (*Indexer, error) {
 		Client:        &es.BaseClient,
 		NumWorkers:    4,
 		FlushBytes:    5e+6,
-		FlushInterval: 10 * time.Second,
+		FlushInterval: 1 * time.Second,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create bulk indexer: %w", err)

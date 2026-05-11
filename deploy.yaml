@@ -20,7 +20,7 @@ spec:
           env:
             # 是否全量刷新
             - name: REINDEX_MODE
-              value: "false"
+              value: "true"
             - name: REINDEX_TOPICS
               value: "orders.order_main,orders.order_item,orders.order_log,products.skus,products.spus,products.sale_detail"
             - name: DB_HOST
@@ -46,7 +46,7 @@ spec:
             - name: KAFKA_GROUP_ID
               value: "es-sync-consumer"
             - name: KAFKA_TOPIC_PREFIX
-              value: ""
+              value: "ecommerce_cdc."
           image: ccr.ccs.tencentyun.com/sumery/postgres-kafka-es-streaming-pipeline:dev
           imagePullPolicy: Always
           ports:
